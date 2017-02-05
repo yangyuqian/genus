@@ -230,6 +230,17 @@ func TestTemplate_Render(t *testing.T) {
 		{"OK - set raw template", fields{
 			rawTemplate: []byte("type {{ .Name }} struct{}"),
 		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\ntype A struct{}\n"), false},
+		{"OK - set raw template with imports", fields{
+			Name:      "t5",
+			Source:    "./testdata/template/t5.tpl",
+			TargetDir: "_test",
+			Filename:  "t5.go",
+		}, args{
+			map[string]interface{}{
+				"Package": "p1",
+				"Name":    "A",
+				"Imports": map[string]string{"": "p51"}}},
+			[]byte("package p1\n\ntype A struct{}\n"), false},
 		{"KO", fields{
 			Name:      "t3",
 			TargetDir: "_test",
@@ -358,6 +369,58 @@ func TestTemplate_write(t *testing.T) {
 		}
 		if err := tmpl.write(); (err != nil) != tt.wantErr {
 			t.Errorf("%q. Template.write() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func TestTemplate_fixImports(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		header      []byte
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantData []byte
+		wantErr  bool
+	}{
+		{"OK", fields{
+			rawResult: []byte("package p1\nimport \"p2\""),
+			TargetDir: "./_test/t_import",
+			Filename:  "t1.go",
+		}, []byte("package p1\n"), false},
+		{"KO - incomplete source code", fields{
+			rawResult: []byte("import \"p2\""),
+			TargetDir: "./_test/t_import",
+			Filename:  "t1.go",
+		}, nil, true},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			header:      tt.fields.header,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		gotData, err := tmpl.fixImports()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.fixImports() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotData, tt.wantData) {
+			t.Errorf("%q. Template.fixImports() = %v, want %v", tt.name, string(gotData), string(tt.wantData))
 		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	gofmt "go/format"
+	goimports "golang.org/x/tools/imports"
 	"io/ioutil"
 	"log"
 	"os"
@@ -39,22 +40,32 @@ func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 
 // Render template by given data
 func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
+	log.Println("Performing Template:load")
 	_, err = tmpl.load()
 	if err != nil {
 		return nil, err
 	}
 
+	log.Println("Performing Template:render")
 	result, err = tmpl.render(data)
 	if err != nil {
 		return
 	}
 
+	log.Println("Performing Template:format")
 	result, err = tmpl.format()
 	if err != nil {
 		return
 	}
 
+	log.Println("Performing Template:write")
 	err = tmpl.write()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Performing Template:fixImports")
+	result, err = tmpl.fixImports()
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +86,20 @@ func (tmpl *Template) format() (data []byte, err error) {
 
 	tmpl.rawResult = data
 
+	return
+}
+
+func (tmpl *Template) fixImports() (data []byte, err error) {
+	log.Printf("Fixing imports for %s", filepath.Join(tmpl.TargetDir, tmpl.Filename))
+	data, err = goimports.Process(filepath.Join(tmpl.TargetDir, tmpl.Filename), tmpl.rawResult, &goimports.Options{})
+	if err != nil {
+		return nil, err
+	}
+
+	tmpl.rawResult = data
+	if err = tmpl.write(); err != nil {
+		return nil, err
+	}
 	return
 }
 
