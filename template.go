@@ -1,8 +1,10 @@
 package genus
 
 import (
+	"bytes"
 	"errors"
 	"io/ioutil"
+	"text/template"
 )
 
 type Template struct {
@@ -13,6 +15,7 @@ type Template struct {
 	SkipExists  bool   // skip generation if exist
 	SkipFormat  bool   // skip go format
 	rawTemplate []byte // rawTemplate data in bytes
+	rawResult   []byte
 }
 
 // Set raw template data
@@ -21,7 +24,7 @@ func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 	return
 }
 
-// load raw template data from file
+// Load raw template data from file
 func (tmpl *Template) loadFile() (data []byte, err error) {
 	if tmpl.Source == "" {
 		return nil, errors.New("Empty source path")
@@ -33,5 +36,22 @@ func (tmpl *Template) loadFile() (data []byte, err error) {
 	}
 
 	tmpl.rawTemplate = data
+	return
+}
+
+// Render template by context
+func (tmpl *Template) render(context interface{}) (data []byte, err error) {
+	parsed, parsedErr := template.New(tmpl.Name).Parse(string(tmpl.rawTemplate))
+	if parsedErr != nil {
+		return nil, parsedErr
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	if execErr := parsed.Execute(buf, context); execErr != nil {
+		return nil, execErr
+	}
+	data = buf.Bytes()
+
+	tmpl.rawResult = data
 	return
 }
