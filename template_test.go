@@ -26,14 +26,14 @@ func TestTemplate_loadFile(t *testing.T) {
 			Source:    "./testdata/template/t1.tpl",
 			TargetDir: "_test",
 			Filename:  "t1.go",
-		}, []byte("package main\nfunc T1(){}\n"), false},
-		{"KO", fields{
+		}, []byte("func T1(){}\n"), false},
+		{"KO - missing file", fields{
 			Name:      "t1",
 			Source:    "./testdata/template/not-exist-t1.tpl",
 			TargetDir: "_test",
 			Filename:  "t1.go",
 		}, nil, true},
-		{"KO", fields{
+		{"KO - blank template data", fields{
 			Name:      "t1",
 			TargetDir: "_test",
 			Filename:  "t1.go",
@@ -169,7 +169,7 @@ func TestTemplate_load(t *testing.T) {
 			Source:    "./testdata/template/t1.tpl",
 			TargetDir: "_test",
 			Filename:  "t1.go",
-		}, []byte("package main\nfunc T1(){}\n"), false},
+		}, []byte("func T1(){}\n"), false},
 		{"OK", fields{
 			Name:        "t1",
 			Source:      "./testdata/template/t1.tpl",

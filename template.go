@@ -10,6 +10,7 @@ import (
 	"text/template"
 )
 
+// Represents single Go file
 type Template struct {
 	Name        string // template name
 	Source      string // source path
