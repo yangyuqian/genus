@@ -226,10 +226,10 @@ func TestTemplate_Render(t *testing.T) {
 			Source:    "./testdata/template/t3.tpl",
 			TargetDir: "_test",
 			Filename:  "t3.go",
-		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\n\ntype A struct{}\n"), false},
+		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\ntype A struct{}\n"), false},
 		{"OK - set raw template", fields{
 			rawTemplate: []byte("type {{ .Name }} struct{}"),
-		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\n\ntype A struct{}"), false},
+		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\ntype A struct{}\n"), false},
 		{"KO", fields{
 			Name:      "t3",
 			TargetDir: "_test",
@@ -262,7 +262,7 @@ func TestTemplate_Render(t *testing.T) {
 			continue
 		}
 		if !reflect.DeepEqual(gotResult, tt.wantResult) {
-			t.Errorf("%q. Template.Render() = %v, want %v", tt.name, gotResult, tt.wantResult)
+			t.Errorf("%q. Template.Render() = %v, want %v", tt.name, string(gotResult), string(tt.wantResult))
 		}
 	}
 }

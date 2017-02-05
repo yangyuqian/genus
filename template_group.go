@@ -20,13 +20,13 @@ type templateData struct {
 
 // Represents single Go package
 type TemplateGroup struct {
-	Package         string
+	Package         string // package name
 	BaseDir         string // absolute directory for template group
-	BasePackage     string
-	AbosultePackage string
+	BasePackage     string // base package
+	AbsolutePackage string // absolute package combined with Package and BasePackage
 	Imports         Imports
 	Templates       []*Template
-	SkipFixImports  bool
+	SkipFixImports  bool // skip fixing imports
 	SkipExists      bool // skip generation if exist
 	SkipFormat      bool // skip go format
 }
@@ -62,6 +62,7 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 			return err
 		}
 	}
+
 	return
 }
 

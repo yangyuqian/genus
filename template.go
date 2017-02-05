@@ -49,6 +49,11 @@ func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
 		return
 	}
 
+	result, err = tmpl.format()
+	if err != nil {
+		return
+	}
+
 	err = tmpl.write()
 	if err != nil {
 		return nil, err
