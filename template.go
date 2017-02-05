@@ -5,6 +5,8 @@ import (
 	"errors"
 	gofmt "go/format"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"text/template"
 )
 
@@ -90,4 +92,20 @@ func (tmpl *Template) render(context interface{}) (data []byte, err error) {
 
 	tmpl.rawResult = data
 	return
+}
+
+// Write rawResult to file
+func (tmpl *Template) write() (err error) {
+	path := filepath.Join(tmpl.TargetDir, tmpl.Filename)
+
+	if _, err := os.Stat(path); err == nil && tmpl.SkipExists {
+		return nil
+	}
+
+	err = os.MkdirAll(tmpl.TargetDir, 0777)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, tmpl.rawResult, 0666)
 }

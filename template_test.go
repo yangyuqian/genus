@@ -316,3 +316,48 @@ func TestTemplate_format(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplate_write(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{"OK", fields{
+			TargetDir: "./_test",
+			Filename:  "t1.go",
+			rawResult: []byte("abc"),
+		}, false},
+		{"OK", fields{
+			TargetDir:  "./_test",
+			Filename:   "t1.go",
+			SkipExists: true,
+			rawResult:  []byte("abcd"),
+		}, false},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		if err := tmpl.write(); (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.write() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
