@@ -115,3 +115,42 @@ func TestTemplate_render(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplate_SetRawTemplate(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	type args struct {
+		raw []byte
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantData []byte
+	}{
+		{"OK", fields{}, args{[]byte("abc")}, []byte("abc")},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		if gotData := tmpl.SetRawTemplate(tt.args.raw); !reflect.DeepEqual(gotData, tt.wantData) {
+			t.Errorf("%q. Template.SetRawTemplate() = %v, want %v", tt.name, gotData, tt.wantData)
+		}
+	}
+}

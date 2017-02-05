@@ -21,7 +21,7 @@ type Template struct {
 // Set raw template data
 func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 	tmpl.rawTemplate = raw
-	return
+	return raw
 }
 
 // Load raw template data from file
