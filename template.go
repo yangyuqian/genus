@@ -5,6 +5,7 @@ import (
 	"errors"
 	gofmt "go/format"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -43,7 +44,17 @@ func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
 		return nil, err
 	}
 
-	return tmpl.render(data)
+	result, err = tmpl.render(data)
+	if err != nil {
+		return
+	}
+
+	err = tmpl.write()
+	if err != nil {
+		return nil, err
+	}
+
+	return
 }
 
 // Fix format of rawResult
@@ -106,12 +117,17 @@ func (tmpl *Template) render(context interface{}) (data []byte, err error) {
 
 // Write rawResult to file
 func (tmpl *Template) write() (err error) {
+	if tmpl.TargetDir == "" {
+		return
+	}
+
 	path := filepath.Join(tmpl.TargetDir, tmpl.Filename)
 
 	if _, err := os.Stat(path); err == nil && tmpl.SkipExists {
 		return nil
 	}
 
+	log.Printf("Creating directory %s", tmpl.TargetDir)
 	err = os.MkdirAll(tmpl.TargetDir, 0777)
 	if err != nil {
 		return err

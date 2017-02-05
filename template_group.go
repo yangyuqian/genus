@@ -27,14 +27,39 @@ type TemplateGroup struct {
 	Imports         Imports
 	Templates       []*Template
 	SkipFixImports  bool
+	SkipExists      bool // skip generation if exist
+	SkipFormat      bool // skip go format
 }
 
 func (tg *TemplateGroup) Render(data interface{}) (err error) {
-	// tdata := templateData{
-	// 	Package:         tg.Package,
-	// 	AbosultePackage: filepath.Join(tg.BasePackage, tg.Package),
-	// }
+	err = tg.ensureGOOS()
+	if err != nil {
+		return err
+	}
 
+	err = tg.ensureGopath()
+	if err != nil {
+		return err
+	}
+
+	err = tg.configureTemplates()
+	if err != nil {
+		return err
+	}
+
+	tdata := &templateData{
+		Package:         tg.Package,
+		AbosultePackage: filepath.Join(tg.BasePackage, tg.Package),
+		Data:            data,
+		Imports:         tg.Imports,
+	}
+
+	for _, t := range tg.Templates {
+		_, err := t.Render(tdata)
+		if err != nil {
+			return err
+		}
+	}
 	return
 }
 
@@ -44,6 +69,20 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 		if idx := strings.LastIndex(t.Name, "/"); idx > 0 {
 			t.Filename = t.Name[(idx+1):] + ".go"
 		}
+
+		t.SkipExists = tg.SkipExists
+		t.SkipFormat = tg.SkipFormat
+	}
+	log.Printf("Configuring template group with BaseDir: %v, Package: %v",
+		tg.BaseDir, tg.Package)
+
+	for k, imp := range tg.Imports {
+		// Local import
+		if strings.HasPrefix(imp, "./") {
+			imp = filepath.Join(tg.BasePackage, imp)
+		}
+
+		tg.Imports[k] = imp
 	}
 
 	return
