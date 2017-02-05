@@ -24,6 +24,15 @@ func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 	return raw
 }
 
+// Load data from file if rawTemplate is not set
+func (tmpl *Template) load() (data []byte, err error) {
+	if len(tmpl.rawTemplate) <= 0 {
+		return tmpl.loadFile()
+	}
+
+	return tmpl.rawTemplate, nil
+}
+
 // Load raw template data from file
 func (tmpl *Template) loadFile() (data []byte, err error) {
 	if tmpl.Source == "" {

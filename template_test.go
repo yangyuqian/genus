@@ -154,3 +154,56 @@ func TestTemplate_SetRawTemplate(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplate_load(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantData []byte
+		wantErr  bool
+	}{
+		{"OK", fields{
+			Name:      "t1",
+			Source:    "./testdata/template/t1.tpl",
+			TargetDir: "_test",
+			Filename:  "t1.go",
+		}, []byte("package main\nfunc T1(){}\n"), false},
+		{"OK", fields{
+			Name:        "t1",
+			Source:      "./testdata/template/t1.tpl",
+			TargetDir:   "_test",
+			Filename:    "t1.go",
+			rawTemplate: []byte("abc"),
+		}, []byte("abc"), false},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		gotData, err := tmpl.load()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.load() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotData, tt.wantData) {
+			t.Errorf("%q. Template.load() = %v, want %v", tt.name, gotData, tt.wantData)
+		}
+	}
+}
