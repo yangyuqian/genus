@@ -375,15 +375,16 @@ func TestTemplate_write(t *testing.T) {
 
 func TestTemplate_fixImports(t *testing.T) {
 	type fields struct {
-		Name        string
-		Source      string
-		TargetDir   string
-		Filename    string
-		SkipExists  bool
-		SkipFormat  bool
-		header      []byte
-		rawTemplate []byte
-		rawResult   []byte
+		Name           string
+		Source         string
+		TargetDir      string
+		Filename       string
+		SkipExists     bool
+		SkipFormat     bool
+		SkipFixImports bool
+		header         []byte
+		rawTemplate    []byte
+		rawResult      []byte
 	}
 	tests := []struct {
 		name     string
@@ -396,6 +397,12 @@ func TestTemplate_fixImports(t *testing.T) {
 			TargetDir: "./_test/t_import",
 			Filename:  "t1.go",
 		}, []byte("package p1\n"), false},
+		{"OK - skip fix imports", fields{
+			SkipFixImports: true,
+			rawResult:      []byte("package p1\nimport \"p2\""),
+			TargetDir:      "./_test/t_import",
+			Filename:       "t1.go",
+		}, []byte("package p1\nimport \"p2\""), false},
 		{"KO - incomplete source code", fields{
 			rawResult: []byte("import \"p2\""),
 			TargetDir: "./_test/t_import",
@@ -404,15 +411,16 @@ func TestTemplate_fixImports(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tmpl := &Template{
-			Name:        tt.fields.Name,
-			Source:      tt.fields.Source,
-			TargetDir:   tt.fields.TargetDir,
-			Filename:    tt.fields.Filename,
-			SkipExists:  tt.fields.SkipExists,
-			SkipFormat:  tt.fields.SkipFormat,
-			header:      tt.fields.header,
-			rawTemplate: tt.fields.rawTemplate,
-			rawResult:   tt.fields.rawResult,
+			Name:           tt.fields.Name,
+			Source:         tt.fields.Source,
+			TargetDir:      tt.fields.TargetDir,
+			Filename:       tt.fields.Filename,
+			SkipFixImports: tt.fields.SkipFixImports,
+			SkipExists:     tt.fields.SkipExists,
+			SkipFormat:     tt.fields.SkipFormat,
+			header:         tt.fields.header,
+			rawTemplate:    tt.fields.rawTemplate,
+			rawResult:      tt.fields.rawResult,
 		}
 		gotData, err := tmpl.fixImports()
 		if (err != nil) != tt.wantErr {

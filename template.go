@@ -21,15 +21,16 @@ import {{ $k }} "{{$v}}"
 
 // Represents single Go file
 type Template struct {
-	Name        string // template name
-	Source      string // source path
-	TargetDir   string // target directory
-	Filename    string // filename of generated code
-	SkipExists  bool   // skip generation if exist
-	SkipFormat  bool   // skip go format
-	header      []byte
-	rawTemplate []byte // rawTemplate data in bytes
-	rawResult   []byte
+	Name           string // template name
+	Source         string // source path
+	TargetDir      string // target directory
+	Filename       string // filename of generated code
+	SkipExists     bool   // skip generation if exist
+	SkipFormat     bool   // skip go format
+	SkipFixImports bool   // skip generation if exist
+	header         []byte
+	rawTemplate    []byte // rawTemplate data in bytes
+	rawResult      []byte
 }
 
 // Set raw template data
@@ -90,6 +91,11 @@ func (tmpl *Template) format() (data []byte, err error) {
 }
 
 func (tmpl *Template) fixImports() (data []byte, err error) {
+	if tmpl.SkipFixImports {
+		log.Println("Skip fixing imports")
+		return tmpl.rawResult, nil
+	}
+
 	log.Printf("Fixing imports for %s", filepath.Join(tmpl.TargetDir, tmpl.Filename))
 	data, err = goimports.Process(filepath.Join(tmpl.TargetDir, tmpl.Filename), tmpl.rawResult, &goimports.Options{})
 	if err != nil {

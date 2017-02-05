@@ -75,6 +75,7 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 
 		t.SkipExists = tg.SkipExists
 		t.SkipFormat = tg.SkipFormat
+		t.SkipFixImports = tg.SkipFixImports
 	}
 	log.Printf("Configuring template group with BaseDir: %v, Package: %v",
 		tg.BaseDir, tg.Package)
