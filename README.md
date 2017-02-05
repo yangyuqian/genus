@@ -1,3 +1,6 @@
+![License](https://img.shields.io/badge/style-MIT-blue.svg?label=license)
+![Build Status](https://api.travis-ci.org/yangyuqian/genus.svg?branch=master)
+
 # genus
 
 A simple wrapper of template engine for code generation tools in Go.
@@ -15,10 +18,11 @@ With Genus, tools can do code generation in a clean way with a few lines of code
 
 ## Features - V1
 
-- [x] Template Repository
+- [x] Template Wrapper
 
   - [x] loading templates from diretories, files and bytes easily
   - [x] grouping templates for Go packages
+  - [x] formating, fixing imports after code generation
 
 - [x] Generation Planner
 
