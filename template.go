@@ -3,6 +3,7 @@ package genus
 import (
 	"bytes"
 	"errors"
+	gofmt "go/format"
 	"io/ioutil"
 	"text/template"
 )
@@ -32,6 +33,18 @@ func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
 	}
 
 	return tmpl.render(data)
+}
+
+// Fix format of rawResult
+func (tmpl *Template) format() (data []byte, err error) {
+	data, err = gofmt.Source(tmpl.rawResult)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpl.rawResult = data
+
+	return
 }
 
 // Load data from file if rawTemplate is not set

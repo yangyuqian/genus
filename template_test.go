@@ -81,17 +81,9 @@ func TestTemplate_render(t *testing.T) {
 		wantErr  bool
 	}{
 		{"OK", fields{
-			Name:        "t1",
-			Source:      "./testdata/template/t1.tpl",
-			TargetDir:   "_test",
-			Filename:    "t1.go",
 			rawTemplate: []byte("package {{ .Package }}"),
 		}, args{map[string]string{"Package": "main"}}, []byte("package main"), false},
 		{"KO", fields{
-			Name:        "t1",
-			Source:      "./testdata/template/t1.tpl",
-			TargetDir:   "_test",
-			Filename:    "t1.go",
 			rawTemplate: []byte("package {{ .Package"),
 		}, args{map[string]string{"Package": "main"}}, nil, true},
 	}
@@ -236,10 +228,6 @@ func TestTemplate_Render(t *testing.T) {
 			Filename:  "t3.go",
 		}, args{map[string]string{"Package": "main"}}, []byte("package main\n"), false},
 		{"OK - set raw template", fields{
-			Name:        "t3",
-			Source:      "./testdata/template/t3.tpl",
-			TargetDir:   "_test",
-			Filename:    "t3.go",
 			rawTemplate: []byte("package {{ .Package }}"),
 		}, args{map[string]string{"Package": "main"}}, []byte("package main"), false},
 		{"KO", fields{
@@ -248,10 +236,6 @@ func TestTemplate_Render(t *testing.T) {
 			Filename:  "t3.go",
 		}, args{map[string]string{"Package": "main"}}, nil, true},
 		{"KO", fields{
-			Name:        "t3",
-			Source:      "./testdata/template/t3.tpl",
-			TargetDir:   "_test",
-			Filename:    "t3.go",
 			rawTemplate: []byte("package {{ .Package"),
 		}, args{map[string]string{"Package": "main"}}, nil, true},
 		{"KO", fields{
@@ -279,6 +263,52 @@ func TestTemplate_Render(t *testing.T) {
 		}
 		if !reflect.DeepEqual(gotResult, tt.wantResult) {
 			t.Errorf("%q. Template.Render() = %v, want %v", tt.name, gotResult, tt.wantResult)
+		}
+	}
+}
+
+func TestTemplate_format(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		wantData []byte
+		wantErr  bool
+	}{
+		{"OK", fields{
+			rawResult: []byte("package main\nfunc T1(){}\n"),
+		}, []byte("package main\n\nfunc T1() {}\n"), false},
+		{"KO - bad syntax", fields{
+			rawResult: []byte("xxx main\nfunc T1(){}\n"),
+		}, nil, true},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		gotData, err := tmpl.format()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.format() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotData, tt.wantData) {
+			t.Errorf("%q. Template.format() = %v, want %v", tt.name, gotData, tt.wantData)
 		}
 	}
 }
