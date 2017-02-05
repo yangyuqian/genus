@@ -37,6 +37,10 @@ func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
 
 // Fix format of rawResult
 func (tmpl *Template) format() (data []byte, err error) {
+	if tmpl.SkipFormat {
+		return tmpl.rawResult, nil
+	}
+
 	data, err = gofmt.Source(tmpl.rawResult)
 	if err != nil {
 		return nil, err

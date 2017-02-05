@@ -290,6 +290,10 @@ func TestTemplate_format(t *testing.T) {
 		{"KO - bad syntax", fields{
 			rawResult: []byte("xxx main\nfunc T1(){}\n"),
 		}, nil, true},
+		{"KO - bad syntax but skip format", fields{
+			SkipFormat: true,
+			rawResult:  []byte("xxx main\nfunc T1(){}\n"),
+		}, []byte("xxx main\nfunc T1(){}\n"), false},
 	}
 	for _, tt := range tests {
 		tmpl := &Template{
