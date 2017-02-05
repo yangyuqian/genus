@@ -47,6 +47,8 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 		return err
 	}
 
+	log.Printf("Rendering template group with BasePackage: %v, Package: %v",
+		tg.BasePackage, tg.Package)
 	tdata := &templateData{
 		Package:         tg.Package,
 		AbosultePackage: filepath.Join(tg.BasePackage, tg.Package),
@@ -107,14 +109,15 @@ func (tg *TemplateGroup) ensureGopath() (err error) {
 
 	for _, gopath := range gopaths {
 		if strings.HasPrefix(pwd, gopath) {
-			log.Printf("Ensure %s under $GOPATH", pwd)
+			log.Printf("Ensure %s under $GOPATH %s", pwd, gopath)
 			if tg.BaseDir == "" {
 				tg.BaseDir = pwd
 			}
 
 			if tg.BasePackage == "" {
-				tg.BasePackage = strings.TrimRight(pwd, filepath.Join(gopath, "src"))
+				tg.BasePackage = pwd[len(gopath)+5:]
 			}
+			log.Printf("BasePackage: %s", tg.BasePackage)
 
 			return nil
 		}
