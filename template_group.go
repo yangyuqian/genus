@@ -13,12 +13,13 @@ type Imports map[string]string
 
 // Represents single Go package
 type TemplateGroup struct {
-	Package        string
-	BaseDir        string // absolute directory for template group
-	BasePackage    string
-	Imports        Imports
-	Templates      []*Template
-	SkipFixImports bool
+	Package         string
+	BaseDir         string // absolute directory for template group
+	BasePackage     string
+	AbosultePackage string
+	Imports         Imports
+	Templates       []*Template
+	SkipFixImports  bool
 }
 
 // TODO: V1 doesn't support windows
@@ -41,8 +42,13 @@ func (tg *TemplateGroup) ensureGopath() (err error) {
 	for _, gopath := range gopaths {
 		if strings.HasPrefix(pwd, gopath) {
 			log.Printf("Ensure %s under $GOPATH", pwd)
-			tg.BaseDir = pwd
-			tg.BasePackage = strings.TrimRight(pwd, filepath.Join(gopath, "src"))
+			if tg.BaseDir == "" {
+				tg.BaseDir = pwd
+			}
+
+			if tg.BasePackage == "" {
+				tg.BasePackage = strings.TrimRight(pwd, filepath.Join(gopath, "src"))
+			}
 
 			return nil
 		}
