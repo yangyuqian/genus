@@ -30,7 +30,7 @@ func (r *Repo) Load() (err error) {
 		if strings.HasSuffix(path, r.Suffix) {
 			r.templateNames = append(r.templateNames, path)
 			r.Templates = append(r.Templates, &Template{
-				Name:   path,
+				Name:   strings.TrimRight(path, r.Suffix),
 				Source: path,
 			})
 			log.Printf("Register template %s", path)
