@@ -207,3 +207,78 @@ func TestTemplate_load(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplate_Render(t *testing.T) {
+	type fields struct {
+		Name        string
+		Source      string
+		TargetDir   string
+		Filename    string
+		SkipExists  bool
+		SkipFormat  bool
+		rawTemplate []byte
+		rawResult   []byte
+	}
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantResult []byte
+		wantErr    bool
+	}{
+		{"OK - load template from file", fields{
+			Name:      "t3",
+			Source:    "./testdata/template/t3.tpl",
+			TargetDir: "_test",
+			Filename:  "t3.go",
+		}, args{map[string]string{"Package": "main"}}, []byte("package main\n"), false},
+		{"OK - set raw template", fields{
+			Name:        "t3",
+			Source:      "./testdata/template/t3.tpl",
+			TargetDir:   "_test",
+			Filename:    "t3.go",
+			rawTemplate: []byte("package {{ .Package }}"),
+		}, args{map[string]string{"Package": "main"}}, []byte("package main"), false},
+		{"KO", fields{
+			Name:      "t3",
+			TargetDir: "_test",
+			Filename:  "t3.go",
+		}, args{map[string]string{"Package": "main"}}, nil, true},
+		{"KO", fields{
+			Name:        "t3",
+			Source:      "./testdata/template/t3.tpl",
+			TargetDir:   "_test",
+			Filename:    "t3.go",
+			rawTemplate: []byte("package {{ .Package"),
+		}, args{map[string]string{"Package": "main"}}, nil, true},
+		{"KO", fields{
+			Name:      "t4",
+			Source:    "./testdata/template/t4.tpl",
+			TargetDir: "_test",
+			Filename:  "t4.go",
+		}, args{map[string]string{"Package": "main"}}, nil, true},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:        tt.fields.Name,
+			Source:      tt.fields.Source,
+			TargetDir:   tt.fields.TargetDir,
+			Filename:    tt.fields.Filename,
+			SkipExists:  tt.fields.SkipExists,
+			SkipFormat:  tt.fields.SkipFormat,
+			rawTemplate: tt.fields.rawTemplate,
+			rawResult:   tt.fields.rawResult,
+		}
+		gotResult, err := tmpl.Render(tt.args.data)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.Render() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotResult, tt.wantResult) {
+			t.Errorf("%q. Template.Render() = %v, want %v", tt.name, gotResult, tt.wantResult)
+		}
+	}
+}

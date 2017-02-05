@@ -24,6 +24,16 @@ func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 	return raw
 }
 
+// Render template by given data
+func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
+	_, err = tmpl.load()
+	if err != nil {
+		return nil, err
+	}
+
+	return tmpl.render(data)
+}
+
 // Load data from file if rawTemplate is not set
 func (tmpl *Template) load() (data []byte, err error) {
 	if len(tmpl.rawTemplate) <= 0 {
