@@ -10,6 +10,13 @@ import (
 	"text/template"
 )
 
+var defaultHeader = []byte(`package {{ .Package }}
+
+{{ range $k, $v := .Imports }}
+import {{ $k }} "{{$v}}"
+{{ end }}
+`)
+
 // Represents single Go file
 type Template struct {
 	Name        string // template name
@@ -18,6 +25,7 @@ type Template struct {
 	Filename    string // filename of generated code
 	SkipExists  bool   // skip generation if exist
 	SkipFormat  bool   // skip go format
+	header      []byte
 	rawTemplate []byte // rawTemplate data in bytes
 	rawResult   []byte
 }
@@ -80,7 +88,8 @@ func (tmpl *Template) loadFile() (data []byte, err error) {
 
 // Render template by context
 func (tmpl *Template) render(context interface{}) (data []byte, err error) {
-	parsed, parsedErr := template.New(tmpl.Name).Parse(string(tmpl.rawTemplate))
+	withHeader := append(defaultHeader, tmpl.rawTemplate...)
+	parsed, parsedErr := template.New(tmpl.Name).Parse(string(withHeader))
 	if parsedErr != nil {
 		return nil, parsedErr
 	}

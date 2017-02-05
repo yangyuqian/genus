@@ -1,1 +1,1 @@
-package {{ .Package
+type {{ .Name struct{}

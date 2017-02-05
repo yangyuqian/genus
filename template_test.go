@@ -81,11 +81,11 @@ func TestTemplate_render(t *testing.T) {
 		wantErr  bool
 	}{
 		{"OK", fields{
-			rawTemplate: []byte("package {{ .Package }}"),
-		}, args{map[string]string{"Package": "main"}}, []byte("package main"), false},
+			rawTemplate: []byte("type {{ .Name }} struct{}"),
+		}, args{map[string]string{"Name": "A", "Package": "p1"}}, []byte("package p1\n\n\ntype A struct{}"), false},
 		{"KO", fields{
-			rawTemplate: []byte("package {{ .Package"),
-		}, args{map[string]string{"Package": "main"}}, nil, true},
+			rawTemplate: []byte("type {{ .Name"),
+		}, args{map[string]string{"Name": "A"}}, nil, true},
 	}
 	for _, tt := range tests {
 		tmpl := &Template{
@@ -226,10 +226,10 @@ func TestTemplate_Render(t *testing.T) {
 			Source:    "./testdata/template/t3.tpl",
 			TargetDir: "_test",
 			Filename:  "t3.go",
-		}, args{map[string]string{"Package": "main"}}, []byte("package main\n"), false},
+		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\n\ntype A struct{}\n"), false},
 		{"OK - set raw template", fields{
-			rawTemplate: []byte("package {{ .Package }}"),
-		}, args{map[string]string{"Package": "main"}}, []byte("package main"), false},
+			rawTemplate: []byte("type {{ .Name }} struct{}"),
+		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\n\ntype A struct{}"), false},
 		{"KO", fields{
 			Name:      "t3",
 			TargetDir: "_test",
