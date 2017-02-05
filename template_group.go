@@ -80,7 +80,8 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 
 	for k, imp := range tg.Imports {
 		// Local import
-		if strings.HasPrefix(imp, "./") {
+		// ./p1 ../p1
+		if strings.HasPrefix(imp, ".") && !filepath.IsAbs(imp) {
 			imp = filepath.Join(tg.BasePackage, imp)
 		}
 

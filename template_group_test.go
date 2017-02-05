@@ -134,6 +134,15 @@ func TestTemplateGroup_Render(t *testing.T) {
 					Source: "./testdata/repo/success/t1.tpl",
 				},
 			}}, args{}, false},
+		{"OK", fields{Package: "p2",
+			BaseDir: "./_test",
+			Imports: Imports{"p3": "./p3"},
+			Templates: []*Template{
+				&Template{
+					Name:   "success/t1/t2",
+					Source: "./testdata/repo/success/t1/t2.tpl",
+				},
+			}}, args{}, false},
 	}
 	for _, tt := range tests {
 		tg := &TemplateGroup{
