@@ -83,7 +83,7 @@ func TestTemplate_render(t *testing.T) {
 		{"OK", fields{
 			rawTemplate: []byte("type {{ .Name }} struct{}"),
 		}, args{map[string]string{"Name": "A", "Package": "p1"}}, []byte("package p1\n\n\ntype A struct{}"), false},
-		{"KO", fields{
+		{"KO - bad syntax in template", fields{
 			rawTemplate: []byte("type {{ .Name"),
 		}, args{map[string]string{"Name": "A"}}, nil, true},
 	}
