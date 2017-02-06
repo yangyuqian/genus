@@ -241,20 +241,20 @@ func TestTemplate_Render(t *testing.T) {
 				"Name":    "A",
 				"Imports": map[string]string{"": "p51"}}},
 			[]byte("package p1\n\ntype A struct{}\n"), false},
-		{"KO", fields{
+		{"KO - Source not set", fields{
 			Name:      "t3",
 			TargetDir: "_test",
 			Filename:  "t3.go",
-		}, args{map[string]string{"Package": "main"}}, nil, true},
-		{"KO", fields{
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
+		{"KO - bad syntax in rawTemplate", fields{
 			rawTemplate: []byte("package {{ .Package"),
-		}, args{map[string]string{"Package": "main"}}, nil, true},
-		{"KO", fields{
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
+		{"KO - bad syntax in template file", fields{
 			Name:      "t4",
 			Source:    "./testdata/template/t4.tpl",
 			TargetDir: "_test",
 			Filename:  "t4.go",
-		}, args{map[string]string{"Package": "main"}}, nil, true},
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
 	}
 	for _, tt := range tests {
 		tmpl := &Template{
