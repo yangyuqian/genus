@@ -1,0 +1,16 @@
+dist: trusty
+sudo: required
+
+language: go
+
+branches:
+  only:
+    - master
+    - dev
+    - /^d_.*$/
+
+go:
+  - 1.7.x
+
+install:
+  - go get -v ./...
