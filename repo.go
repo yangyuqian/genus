@@ -2,6 +2,7 @@ package genus
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,6 +23,10 @@ func (r *Repo) Load() (err error) {
 	}
 
 	return filepath.Walk(r.TemplateDir, filepath.WalkFunc(func(path string, info os.FileInfo, err error) error {
+		if info == nil {
+			return errors.New(fmt.Sprintf("Directory or file %s not found", path))
+		}
+
 		// skip directories
 		if info.IsDir() {
 			return nil

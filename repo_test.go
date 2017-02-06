@@ -15,6 +15,8 @@ func TestRepo_Load(t *testing.T) {
 		wantErr bool
 	}{
 		{"OK", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success"}, false},
+		{"KO - directory not exist", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/not-exist"}, true},
+		{"KO - template dir not set", fields{Suffix: ".tpl"}, true},
 	}
 	for _, tt := range tests {
 		r := &Repo{
