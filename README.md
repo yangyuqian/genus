@@ -1,3 +1,6 @@
+![License](https://img.shields.io/badge/style-MIT-blue.svg?label=license)
+![Build Status](https://api.travis-ci.org/yangyuqian/genus.svg?branch=master)
+
 # genus
 
 A simple wrapper of template engine for code generation tools in Go.
