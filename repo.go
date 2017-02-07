@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+func NewRepo(templateDir, suffix string) *Repo {
+	return &Repo{Suffix: suffix, TemplateDir: templateDir}
+}
+
 // Template repository
 type Repo struct {
 	Suffix        string
@@ -17,6 +21,7 @@ type Repo struct {
 	templateNames []string
 }
 
+// Load templates
 func (r *Repo) Load() (err error) {
 	if r.TemplateDir == "" {
 		return errors.New("TemplateDir not set")
@@ -43,4 +48,29 @@ func (r *Repo) Load() (err error) {
 
 		return nil
 	}))
+}
+
+// Build template group with given template names
+func (r *Repo) BuildGroup(names ...string) (tg *TemplateGroup, err error) {
+	tg = &TemplateGroup{}
+	for _, name := range names {
+		t, err := r.Lookup(name)
+		if err != nil {
+			return nil, err
+		}
+
+		tg.Templates = append(tg.Templates, t)
+	}
+
+	return
+}
+
+// Loakup template by name
+func (r *Repo) Lookup(name string) (t *Template, err error) {
+	for _, tmpl := range r.Templates {
+		if tmpl.Name == name {
+			return tmpl, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("Template %s not registered", name))
 }

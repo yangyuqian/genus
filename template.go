@@ -3,19 +3,25 @@ package genus
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	gofmt "go/format"
-	goimports "golang.org/x/tools/imports"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	goimports "golang.org/x/tools/imports"
 )
 
 var defaultHeader = []byte(`package {{ .Package }}
 
-{{ range $k, $v := .Imports }}
-import {{ $k }} "{{$v}}"
+{{ with .Imports }}
+import (
+{{- range $k, $v := . }}
+ {{- $v -}} "{{- $k -}}"
+{{ end -}}
+)
 {{ end }}
 `)
 
@@ -135,8 +141,8 @@ func (tmpl *Template) loadFile() (data []byte, err error) {
 
 // Render template by context
 func (tmpl *Template) render(context interface{}) (data []byte, err error) {
-	withHeader := append(defaultHeader, tmpl.rawTemplate...)
-	parsed, parsedErr := template.New(tmpl.Name).Parse(string(withHeader))
+	withHeader := fmt.Sprintf("%s{{ with .Data }}%s{{ end -}}", string(defaultHeader), string(tmpl.rawTemplate))
+	parsed, parsedErr := template.New(tmpl.Name).Parse(withHeader)
 	if parsedErr != nil {
 		return nil, parsedErr
 	}
@@ -146,6 +152,16 @@ func (tmpl *Template) render(context interface{}) (data []byte, err error) {
 		return nil, execErr
 	}
 	data = buf.Bytes()
+
+	fbuf := bytes.NewBuffer([]byte{})
+	err = template.Must(template.New("filename").Parse(fmt.Sprintf("{{- with .Data -}} %s {{- end -}}", tmpl.Filename))).Execute(fbuf, context)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fbuf.Bytes()) > 0 {
+		tmpl.Filename = string(fbuf.Bytes())
+	}
 
 	tmpl.rawResult = data
 	return

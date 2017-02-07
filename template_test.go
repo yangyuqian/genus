@@ -82,7 +82,7 @@ func TestTemplate_render(t *testing.T) {
 	}{
 		{"OK", fields{
 			rawTemplate: []byte("type {{ .Name }} struct{}"),
-		}, args{map[string]string{"Name": "A", "Package": "p1"}}, []byte("package p1\n\n\ntype A struct{}"), false},
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("package p1\n\n\ntype A struct{}"), false},
 		{"KO - bad syntax in template", fields{
 			rawTemplate: []byte("type {{ .Name"),
 		}, args{map[string]string{"Name": "A"}}, nil, true},
@@ -221,15 +221,15 @@ func TestTemplate_Render(t *testing.T) {
 		wantResult []byte
 		wantErr    bool
 	}{
-		{"OK - load template from file", fields{
+		{"OK - render template from file", fields{
 			Name:      "t3",
 			Source:    "./testdata/template/t3.tpl",
 			TargetDir: "_test",
 			Filename:  "t3.go",
-		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\ntype A struct{}\n"), false},
-		{"OK - set raw template", fields{
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("package p1\n\ntype A struct{}\n"), false},
+		{"OK - render template from raw bytes", fields{
 			rawTemplate: []byte("type {{ .Name }} struct{}"),
-		}, args{map[string]string{"Package": "p1", "Name": "A"}}, []byte("package p1\n\ntype A struct{}\n"), false},
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("package p1\n\ntype A struct{}\n"), false},
 		{"OK - set raw template with imports", fields{
 			Name:      "t5",
 			Source:    "./testdata/template/t5.tpl",
@@ -238,8 +238,10 @@ func TestTemplate_Render(t *testing.T) {
 		}, args{
 			map[string]interface{}{
 				"Package": "p1",
-				"Name":    "A",
-				"Imports": map[string]string{"": "p51"}}},
+				"Data": map[string]interface{}{
+					"Name":    "A",
+					"Imports": map[string]string{"": "p51"}}},
+		},
 			[]byte("package p1\n\ntype A struct{}\n"), false},
 		{"KO - Source not set", fields{
 			Name:      "t3",

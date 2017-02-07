@@ -23,7 +23,9 @@ type TemplateGroup struct {
 	Package         string // package name
 	BaseDir         string // absolute directory for template group
 	BasePackage     string // base package
+	RelativePackage string
 	AbsolutePackage string // absolute package combined with Package and BasePackage
+	Filename        string
 	Imports         Imports
 	Templates       []*Template
 	SkipFixImports  bool // skip fixing imports
@@ -47,11 +49,12 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 		return err
 	}
 
-	log.Printf("Rendering template group with BasePackage: %v, Package: %v",
-		tg.BasePackage, tg.Package)
+	absPkg := filepath.Join(tg.BasePackage, tg.RelativePackage)
+	log.Printf("Rendering template group with BasePackage: %v, Package: %v, RelativePackage: %v",
+		tg.BasePackage, tg.Package, tg.RelativePackage)
 	tdata := &templateData{
 		Package:         tg.Package,
-		AbosultePackage: filepath.Join(tg.BasePackage, tg.Package),
+		AbosultePackage: absPkg,
 		Data:            data,
 		Imports:         tg.Imports,
 	}
@@ -67,9 +70,22 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 }
 
 func (tg *TemplateGroup) configureTemplates() (err error) {
+	if tg.Package == "" {
+		if idx := strings.LastIndex(tg.RelativePackage, "/"); idx >= 0 {
+			tg.Package = tg.RelativePackage[(idx + 1):]
+		} else if len(tg.RelativePackage) > 0 {
+			tg.Package = tg.RelativePackage
+		}
+	}
+
 	for _, t := range tg.Templates {
-		t.TargetDir = filepath.Join(tg.BaseDir, tg.Package)
-		if idx := strings.LastIndex(t.Name, "/"); idx > 0 {
+		t.TargetDir = filepath.Join(tg.BaseDir, tg.RelativePackage)
+
+		if tg.Filename != "" {
+			t.Filename = tg.Filename
+		}
+
+		if idx := strings.LastIndex(t.Name, "/"); tg.Filename == "" && idx > 0 {
 			t.Filename = t.Name[(idx+1):] + ".go"
 		}
 
@@ -80,15 +96,18 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 	log.Printf("Configuring template group with BaseDir: %v, Package: %v",
 		tg.BaseDir, tg.Package)
 
-	for k, imp := range tg.Imports {
+	imps := make(Imports)
+	for imp, alias := range tg.Imports {
 		// Local import
 		// ./p1 ../p1
 		if strings.HasPrefix(imp, ".") && !filepath.IsAbs(imp) {
 			imp = filepath.Join(tg.BasePackage, imp)
 		}
 
-		tg.Imports[k] = imp
+		imps[imp] = alias
 	}
+
+	tg.Imports = imps
 
 	return
 }

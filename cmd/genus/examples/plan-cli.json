@@ -1,0 +1,54 @@
+{
+  "Suffix": ".tpl",
+  "PlanItems": [
+    {
+      "Package": "main",
+      "RelativePackage": "app/cmd/server",
+      "PlanType": "SINGLETON",
+      "TemplateDir": "./cmd/genus/examples/spec",
+      "BaseDir": "./_test",
+      "TemplateNames": ["cmd/genus/examples/spec/main"],
+      "Imports": {
+        "./app/server": "",
+       "os": "",
+        "gopkg.in/urfave/cli.v1": "cli",
+        "net/http": ""
+      },
+      "Data": [
+        {
+          "Name": "main",
+          "AppName": "myapp",
+          "AppDescr": "My Application",
+          "AppVersion": "0.0.1"
+        }
+      ]
+    },
+    {
+      "RelativePackage": "app/server",
+      "PlanType": "SINGLETON",
+      "TemplateDir": "./cmd/genus/examples/spec",
+      "BaseDir": "./_test",
+      "TemplateNames": ["cmd/genus/examples/spec/server", "cmd/genus/examples/spec/types","cmd/genus/examples/spec/default_handler"],
+      "Imports": {
+        "crypto/tls":"",
+        "crypto/x509":"",
+        "errors": "",
+        "fmt": "",
+        "io/ioutil": "",
+        "log": "",
+        "net": "",
+        "net/http": "",
+        "strconv": "",
+        "strings": "",
+        "sync": "",
+        "time": "",
+        "github.com/tylerb/graceful":""
+      },
+      "Data": [
+        {
+          "Name": "server"
+        }
+      ]
+    }
+  ]
+}
