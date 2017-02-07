@@ -127,7 +127,7 @@ func TestTemplateGroup_Render(t *testing.T) {
 	}{
 		{"OK", fields{Package: "p1",
 			BaseDir: "./_test",
-			Imports: Imports{"p2": "./p2"},
+			Imports: Imports{"./p2": "p2"},
 			Templates: []*Template{
 				&Template{
 					Name:   "success/t1",
@@ -136,7 +136,7 @@ func TestTemplateGroup_Render(t *testing.T) {
 			}}, args{}, false},
 		{"OK", fields{Package: "p2",
 			BaseDir: "./_test",
-			Imports: Imports{"p3": "./p3"},
+			Imports: Imports{"./p3": "p3"},
 			Templates: []*Template{
 				&Template{
 					Name:   "success/t1/t2",
@@ -158,6 +158,66 @@ func TestTemplateGroup_Render(t *testing.T) {
 		}
 		if err := tg.Render(tt.args.data); (err != nil) != tt.wantErr {
 			t.Errorf("%q. TemplateGroup.Render() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func TestTemplateGroup_RenderPartial(t *testing.T) {
+	type fields struct {
+		Package         string
+		BaseDir         string
+		BasePackage     string
+		RelativePackage string
+		AbsolutePackage string
+		Filename        string
+		Imports         Imports
+		Templates       []*Template
+		SkipFixImports  bool
+		SkipExists      bool
+		SkipFormat      bool
+		Merge           bool
+	}
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{"OK", fields{Package: "p1",
+			BaseDir:  "./_test",
+			Imports:  Imports{"./p2": "p2"},
+			Filename: "merged.go",
+			Templates: []*Template{
+				&Template{
+					Name:   "success/t1",
+					Source: "./testdata/repo/success/t1.tpl",
+				},
+				&Template{
+					Name:   "success/t1/t2",
+					Source: "./testdata/repo/success/t1/t2.tpl",
+				},
+			}}, args{map[string]interface{}{"Name": "A"}}, false},
+	}
+	for _, tt := range tests {
+		tg := &TemplateGroup{
+			Package:         tt.fields.Package,
+			BaseDir:         tt.fields.BaseDir,
+			BasePackage:     tt.fields.BasePackage,
+			RelativePackage: tt.fields.RelativePackage,
+			AbsolutePackage: tt.fields.AbsolutePackage,
+			Filename:        tt.fields.Filename,
+			Imports:         tt.fields.Imports,
+			Templates:       tt.fields.Templates,
+			SkipFixImports:  tt.fields.SkipFixImports,
+			SkipExists:      tt.fields.SkipExists,
+			SkipFormat:      tt.fields.SkipFormat,
+			Merge:           tt.fields.Merge,
+		}
+		if err := tg.RenderPartial(tt.args.data); (err != nil) != tt.wantErr {
+			t.Errorf("%q. TemplateGroup.RenderPartial() error = %v, wantErr %v", tt.name, err, tt.wantErr)
 		}
 	}
 }

@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+func NewRepo(templateDir, suffix string) *Repo {
+	return &Repo{Suffix: suffix, TemplateDir: templateDir}
+}
+
 // Template repository
 type Repo struct {
 	Suffix        string
@@ -17,6 +21,7 @@ type Repo struct {
 	templateNames []string
 }
 
+// Load templates
 func (r *Repo) Load() (err error) {
 	if r.TemplateDir == "" {
 		return errors.New("TemplateDir not set")
@@ -33,14 +38,46 @@ func (r *Repo) Load() (err error) {
 		}
 
 		if strings.HasSuffix(path, r.Suffix) {
-			r.templateNames = append(r.templateNames, path)
+			suffixLen := len(r.Suffix)
+			relName, err := filepath.Rel(r.TemplateDir, path)
+			if err != nil {
+				return err
+			}
+
+			r.templateNames = append(r.templateNames, relName)
+			tmplName := relName[0:(len(relName) - suffixLen)]
 			r.Templates = append(r.Templates, &Template{
-				Name:   strings.TrimRight(path, r.Suffix),
+				Name:   tmplName,
 				Source: path,
 			})
-			log.Printf("Register template %s", path)
+			log.Printf("Register template %s at %s", tmplName, path)
 		}
 
 		return nil
 	}))
+}
+
+// Build template group with given template names
+func (r *Repo) BuildGroup(names ...string) (tg *TemplateGroup, err error) {
+	tg = &TemplateGroup{}
+	for _, name := range names {
+		t, err := r.Lookup(name)
+		if err != nil {
+			return nil, err
+		}
+
+		tg.Templates = append(tg.Templates, t)
+	}
+
+	return
+}
+
+// Loakup template by name
+func (r *Repo) Lookup(name string) (t *Template, err error) {
+	for _, tmpl := range r.Templates {
+		if tmpl.Name == name {
+			return tmpl, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("Template %s not registered", name))
 }

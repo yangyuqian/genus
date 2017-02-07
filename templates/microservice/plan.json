@@ -1,0 +1,72 @@
+{
+  "Suffix": ".tpl",
+  "BaseDir": "./_test",
+  "TemplateDir": "./templates/microservice",
+  "Data": [
+    {
+      "Name": "main",
+      "AppName": "myapp",
+      "AppDescr": "My Golang Application",
+      "AppVersion": "0.0.1",
+      "WithConfig": true,
+      "ConfigFormat": "yaml",
+      "WithHTTP": true
+    }
+  ],
+  "PlanItems": [
+    {
+      "Package": "main",
+      "RelativePackage": "app/cmd/server",
+      "PlanType": "SINGLETON",
+      "TemplateNames": [
+        "cmd/main"
+      ],
+      "Imports": {
+        "./app/types": "",
+        "./app/server": "",
+       "os": "",
+        "gopkg.in/urfave/cli.v1": "cli",
+        "net/http": ""
+      }
+    },
+    {
+      "RelativePackage": "app/config",
+      "PlanType": "SINGLETON",
+      "TemplateNames": [
+        "config/config"
+      ],
+      "Imports": {
+       "os": "",
+       "gopkg.in/yaml.v2": "yaml",
+       "encoding/json": ""
+      }
+    },
+    {
+      "RelativePackage": "app/server",
+      "PlanType": "SINGLETON",
+      "TemplateNames": [
+        "server/default_handler",
+        "server/server",
+        "server/test/server_test"
+      ],
+      "Imports": {
+        "crypto/tls":"",
+        "crypto/x509":"",
+        "fmt": "",
+        "io/ioutil": "",
+        "log": "",
+        "net": "",
+        "net/http": "",
+        "strconv": "",
+        "strings": "",
+        "sync": "",
+        "time": "",
+        "github.com/tylerb/graceful":"",
+        "github.com/pkg/errors": "",
+        "net/http/httptest": "",
+        "testing": "",
+        "os": ""
+      }
+    }
+  ]
+}

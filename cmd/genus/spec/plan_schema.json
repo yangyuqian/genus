@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Extension": {
+      "type": "object",
+      "properties": {
+        "Framework": {
+          "type": "string",
+          "enum": ["sqlboiler"],
+          "description": "Extension for 3rd party framework"
+        },
+        "Data": {
+          "type": "object",
+          "description": "Extension data for 3rd-party framework"
+        }
+      },
+      "description": "3rd party extension used in complex generators"
+    },
+    "Suffix": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Suffix of templates"
+    },
+    "TemplateDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Template directory"
+    },
+    "BaseDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base directory for generated code, default for $PWD"
+    },
+    "BasePackage": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base go package for local imports in generated code"
+    },
+    "SkipExists": {
+      "type": "boolean",
+      "description": "Set to true if you want to skip generation once file exists"
+    },
+    "SkipFormat": {
+      "type": "boolean",
+      "description": "Set to true if you want to skip go formating once file exists"
+    },
+    "SkipFixImports": {
+      "type": "boolean",
+      "description": "Set to true if you want to skip fixing imports"
+    },
+    "Merge": {
+      "type": "boolean",
+      "description": "Set to true if templates of one plan item should be merged into single file"
+    },
+    "Data": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "PlanItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Suffix": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Suffix of templates"
+          },
+          "TemplateDir": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Template directory"
+          },
+          "BaseDir": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Base directory for generated code, default for $PWD"
+          },
+          "BasePackage": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Base go package for local imports in generated code"
+          },
+          "SkipExists": {
+            "type": "boolean",
+            "description": "Set to true if you want to skip generation once file exists"
+          },
+          "SkipFormat": {
+            "type": "boolean",
+            "description": "Set to true if you want to skip go formating once file exists"
+          },
+          "SkipFixImports": {
+            "type": "boolean",
+            "description": "Set to true if you want to skip fixing imports"
+          },
+          "Merge": {
+            "type": "boolean",
+            "description": "Set to true if templates of one plan item should be merged into single file"
+          },
+          "Package": {
+            "type": "string",
+            "description": "Package of generated code"
+          },
+          "PlanType": {
+            "type": "string",
+            "enum": ["SINGLETON", "REPEATABLE"],
+            "description": "Set to REPEATABLE if plan is executed multiple times with every single item in given data, otherwise set it to SINGLETONE"
+          },
+          "RelativePackage": {
+            "type": "string",
+            "description": "Relative package of the generated code under the BaseDir"
+          },
+          "Filename": {
+            "type": "string",
+            "description": "Filename of your generated code, this can be a Go template accepting the embeded Data item"
+          },
+          "TemplateNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+           "description": "Template names, usually some relative path with template suffix removed"
+          },
+          "Imports": {
+            "type": "object",
+            "description": "Complete imports for your plan, can be absolute imports or local imports, key is alias of the import, and value is the actual path"
+          },
+          "Data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["PlanType"]
+      }
+    }
+  },
+  "required": []
+}
