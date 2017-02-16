@@ -3,6 +3,16 @@
 
 [中文版](README-cn.md)
 
+List of Contents:
+
+- [Examples](docs/en/examples.md)
+
+- [Generation Plan Specification](docs/en/gps.md)
+
+- [Use Guide](docs/en/ug.md)
+
+- [Built-in Generators](docs/en/generators.md)
+
 # genus
 
 A general code generation tools in Go.
@@ -33,16 +43,6 @@ becuase those models are generated from the same database schema.
 
 Genus provides a clean way to perform code generation.
 Go to [Examples](docs/en/examples.md) to see more details.
-
-List of Contents:
-
-- [Examples](docs/en/examples.md)
-
-- [Generation Plan Specification](docs/en/gps.md)
-
-- [Use Guide](docs/en/ug.md)
-
-- [Built-in Generators](docs/en/generators.md)
 
 # Installation
 
