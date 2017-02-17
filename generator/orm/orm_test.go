@@ -18,8 +18,8 @@ func TestBuildRepeatableData(t *testing.T) {
 		wantData int
 		wantErr  bool
 	}{
-		{"OK - no tables", args{DataOpts{}}, 0, false},
-		{"OK - 1 table", args{DataOpts{Tables: Tables{bdb.Table{}}, DriverName: "mysql", Driver: driver}}, 1, false},
+		{"OK - no tables", args{DataOpts{Framework: "sqlboiler"}}, 0, false},
+		{"OK - 1 table", args{DataOpts{Framework: "sqlboiler", Tables: Tables{bdb.Table{}}, DriverName: "mysql", Driver: driver}}, 1, false},
 	}
 	for _, tt := range tests {
 		gotData, err := BuildRepeatableData(tt.args.opts)
@@ -45,7 +45,7 @@ func TestBuildSingletonData(t *testing.T) {
 		wantData int
 		wantErr  bool
 	}{
-		{"OK - 1 table", args{DataOpts{Tables: Tables{bdb.Table{}}, DriverName: "mysql", Driver: driver}}, 1, false},
+		{"OK - 1 table", args{DataOpts{Framework: "sqlboiler", Tables: Tables{bdb.Table{}}, DriverName: "mysql", Driver: driver}}, 1, false},
 	}
 	for _, tt := range tests {
 		gotData, err := BuildSingletonData(tt.args.opts)
