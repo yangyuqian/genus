@@ -57,7 +57,8 @@
       "type": "array",
       "items": {
         "type": "object"
-      }
+      },
+      "description": "Global data shared across all plan items, will be overrided if a plan item has its own data"
     },
     "PlanItems": {
       "type": "array",
