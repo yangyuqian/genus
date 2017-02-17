@@ -1,5 +1,6 @@
 ![License](https://img.shields.io/badge/style-MIT-blue.svg?label=license)
 ![Build Status](https://api.travis-ci.org/yangyuqian/genus.svg?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/yangyuqian/genus)](https://goreportcard.com/report/github.com/yangyuqian/genus)
 
 [中文版](README-cn.md)
 
