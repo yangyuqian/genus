@@ -9,7 +9,7 @@ List of Contents:
 
 - [Generation Plan Specification](docs/en/gps.md)
 
-- [Use Guide](docs/en/ug.md)
+- [Guideline of Flexible Templates in Go](docs/en/flexible-templates.md)
 
 - [Built-in Generators](docs/en/generators.md)
 
