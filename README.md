@@ -17,6 +17,8 @@ List of Contents:
 
 A general code generation tools in Go.
 
+# Why Another Generator?
+
 Code generation has been becoming a popular way of metaprogramming in Go.
 
 For example, when working with a ORM framework, you may want to create models
