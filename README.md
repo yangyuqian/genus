@@ -82,6 +82,3 @@ go get -u github.com/yangyuqian/genus/cmd/genus
   - [x] create Generation Plan Specification of Database from given database
 
 
-## Contribute to this project
-
-TODO
