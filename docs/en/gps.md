@@ -52,10 +52,9 @@ PlanItems represents independent code generation plan for files in same package.
 |Imports|complete imports for your plan, can be absolute imports or local imports, key of the object is the actual path, and value of the object is alias of the import|
 |Data|an array object, for a singleton plan item, first item will be used to execute templates, and for repeatable plan item, templates will be executed with items|
 
-## Singleton
+## Examples
 
+[Simple Command Line for Web Application](/examples/single-cli-webapp)
 
-
-## Repeatable
 
 

@@ -134,6 +134,8 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 
 		if idx := strings.LastIndex(t.Name, "/"); tg.Filename == "" && idx > 0 {
 			t.Filename = t.Name[(idx+1):] + ".go"
+		} else if len(t.Name) > 0 {
+			t.Filename = t.Name + ".go"
 		}
 
 		t.SkipExists = tg.SkipExists

@@ -198,16 +198,18 @@ func (tmpl *Template) write() (err error) {
 	}
 
 	path := filepath.Join(tmpl.TargetDir, tmpl.Filename)
+	log.Printf("Joining filepath = <%s> + <%s>", tmpl.TargetDir, tmpl.Filename)
 
 	if _, err := os.Stat(path); err == nil && tmpl.SkipExists {
 		return nil
 	}
 
-	log.Printf("Creating directory %s", tmpl.TargetDir)
+	log.Printf("Creating directory <%s>", tmpl.TargetDir)
 	err = os.MkdirAll(tmpl.TargetDir, 0777)
 	if err != nil {
 		return err
 	}
 
+	log.Printf("Writing to file <%s>", path)
 	return ioutil.WriteFile(path, tmpl.rawResult, 0666)
 }
