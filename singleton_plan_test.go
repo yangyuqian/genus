@@ -1,14 +1,15 @@
 package genus
 
 import "testing"
+import "github.com/yangyuqian/genus/types"
 
 func TestSingletonPlan_Type(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *SingletonPlan
-		want PlanType
+		want types.PlanType
 	}{
-		{"OK", nil, SINGLETON},
+		{"OK", nil, types.SINGLETON},
 	}
 	for _, tt := range tests {
 		p := tt.p
@@ -74,8 +75,8 @@ func TestSingletonPlan_init(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		{"OK", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success", BaseDir: "./_test", RelativePackage: "a/b", TemplateNames: []string{"testdata/repo/success/t1"}}, false},
-		{"KO - BaseDir not set", fields{Suffix: ".tpl", TemplateDir: "./testdata", RelativePackage: "a/b", TemplateNames: []string{"testdata/repo/success/t1"}}, true},
+		{"OK", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success", BaseDir: "./_test", RelativePackage: "a/b", TemplateNames: []string{"t1"}}, false},
+		{"KO - BaseDir not set", fields{Suffix: ".tpl", TemplateDir: "./testdata", RelativePackage: "a/b", TemplateNames: []string{"t1"}}, true},
 		{"KO - TemplateNames not set", fields{RelativePackage: "a/b", BaseDir: "./"}, true},
 	}
 	for _, tt := range tests {
@@ -126,9 +127,9 @@ func TestSingletonPlan_Render(t *testing.T) {
 			BasePackage:     "github.com/yangyuqian/myapp",
 			RelativePackage: "x/y",
 			TemplateNames: []string{
-				"testdata/plan/success/p1/t1",
-				"testdata/plan/success/p1/p2/t2",
-				"testdata/plan/success/p1/t3",
+				"p1/t1",
+				"p1/p2/t2",
+				"p1/t3",
 			},
 			Data: map[string]interface{}{"Package": "p1"},
 		}, false},

@@ -9,8 +9,28 @@ branches:
     - dev
     - /^d_.*$/
 
+services:
+  - docker
+
 go:
   - 1.7.x
 
+env:
+  DOCKER_COMPOSE_VERSION: 1.4.2
+
+before_install:
+  - docker-compose up -d ci-mysql
+  - sleep 15
+  - mysql -h172.17.0.1 -uroot -proot -P13306 -e 'CREATE DATABASE IF NOT EXISTS test;'
+  - mysql -h172.17.0.1 -uroot -proot -P13306 < ./testdata/mysql/create_user.sql
+  - mysql -h172.17.0.1 -uscauser -pscauser -Dtest -P13306 < ./testdata/mysql/create_schema.sql
+  - mkdir -p ./_test
+
 install:
   - go get -v ./...
+  - go install github.com/yangyuqian/genus/cmd/genus
+  - genus g orm --host 172.17.0.1 --port 13306 --username scauser --password scauser --database test --framework sqlboiler --mysql --base ./_test --relative-pkg myapp/orm
+  - genus g orm --host 172.17.0.1 --port 13306 --username scauser --password scauser --database test --framework gorm --mysql --base ./_test --relative-pkg gorm/orm
+  - genus g --spec examples/simple-cli-webapp/plan.json
+  - go get -v ./_test/myapp/orm/...
+  - go test -v ./_test/myapp/orm/... -test.mysql.dbname test -test.mysql.host 172.17.0.1 -test.mysql.port 13306 -test.mysql.user scauser -test.mysql.pass scauser

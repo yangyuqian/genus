@@ -54,16 +54,16 @@ func TestRepo_BuildGroup(t *testing.T) {
 		{"OK - build template group with names", fields{
 			Suffix:      ".tpl",
 			TemplateDir: "./testdata/repo/success"},
-			args{[]string{"testdata/repo/success/t1"}},
+			args{[]string{"t1"}},
 			&TemplateGroup{
 				Templates: []*Template{
-					&Template{Name: "testdata/repo/success/t1",
+					&Template{Name: "t1",
 						Source: "testdata/repo/success/t1.tpl"}}},
 			false},
 		{"KO - template not found", fields{
 			Suffix:      ".tpl",
 			TemplateDir: "./testdata/repo/success"},
-			args{[]string{"testdata/repo/success/non-exist"}},
+			args{[]string{"non-exist"}},
 			nil, true},
 	}
 	for _, tt := range tests {
@@ -105,8 +105,8 @@ func TestRepo_Lookup(t *testing.T) {
 		wantT   *Template
 		wantErr bool
 	}{
-		{"OK", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success"}, args{"testdata/repo/success/t1"}, &Template{Name: "testdata/repo/success/t1", Source: "testdata/repo/success/t1.tpl"}, false},
-		{"KO - template not found", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success"}, args{"testdata/repo/success/non-exist"}, nil, true},
+		{"OK", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success"}, args{"t1"}, &Template{Name: "t1", Source: "testdata/repo/success/t1.tpl"}, false},
+		{"KO - template not found", fields{Suffix: ".tpl", TemplateDir: "./testdata/repo/success"}, args{"non-exist"}, nil, true},
 	}
 	for _, tt := range tests {
 		r := &Repo{

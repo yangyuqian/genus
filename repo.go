@@ -38,12 +38,19 @@ func (r *Repo) Load() (err error) {
 		}
 
 		if strings.HasSuffix(path, r.Suffix) {
-			r.templateNames = append(r.templateNames, path)
+			suffixLen := len(r.Suffix)
+			relName, err := filepath.Rel(r.TemplateDir, path)
+			if err != nil {
+				return err
+			}
+
+			r.templateNames = append(r.templateNames, relName)
+			tmplName := relName[0:(len(relName) - suffixLen)]
 			r.Templates = append(r.Templates, &Template{
-				Name:   strings.TrimRight(path, r.Suffix),
+				Name:   tmplName,
 				Source: path,
 			})
-			log.Printf("Register template %s", path)
+			log.Printf("Register template %s at %s", tmplName, path)
 		}
 
 		return nil

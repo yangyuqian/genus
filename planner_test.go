@@ -13,14 +13,14 @@ func TestPackagePlanner_Plan(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		{"OK", fields{RawSpec: []byte(`{
+		{"OK - regular without extension", fields{RawSpec: []byte(`{
 			"PlanItems": [
 				{
 					"PlanType": "SINGLETON",
 					"Suffix": ".tpl",
 					"TemplateDir": "./testdata/plan/success",
 					"BaseDir": "./_test",
-					"TemplateNames": ["testdata/plan/success/p1/t1"],
+					"TemplateNames": ["p1/t1"],
 					"Data": [
 						{
 							"Message": "Hello World"
@@ -33,7 +33,7 @@ func TestPackagePlanner_Plan(t *testing.T) {
 					"TemplateDir": "./testdata/plan/success",
 					"Filename": "{{ .Package }}111.go",
 					"BaseDir": "./_test",
-					"TemplateNames": ["testdata/plan/success/p1/t1"],
+					"TemplateNames": ["p1/t1"],
 					"Data": [
 						{
 							"Message": "Hello World"
@@ -46,13 +46,45 @@ func TestPackagePlanner_Plan(t *testing.T) {
 					"TemplateDir": "./testdata/plan/success",
 					"BaseDir": "./_test",
 					"Filename": "hello_{{ .Name }}.go",
-					"TemplateNames": ["testdata/plan/success/p1/t1"],
+					"TemplateNames": ["p1/t1"],
 					"Data": [
 						{
 							"Name": "world1",
 							"Message": "Hello World"
 						}
 					]
+				}
+			]
+		}`)}, false},
+		{"OK - framework extension", fields{RawSpec: []byte(`{
+		    "Extension": {
+			  "Framework": "sqlboiler",
+			  "Data": {
+				   "BaseDir": "./_test",
+				   "TemplateDir": "",
+				   "Schema": "test",
+				   "DriverName": "mysql",
+				   "PkgName": "",
+				   "Tables": null
+			  }
+			},
+			"PlanItems": [
+				{
+					"PlanType": "SINGLETON",
+					"Suffix": ".tpl",
+					"TemplateDir": "./testdata/plan/success",
+					"BaseDir": "./_test",
+					"TemplateNames": ["p1/t1"],
+					"Data": null
+				},
+				{
+					"PlanType": "REPEATABLE",
+					"Suffix": ".tpl",
+					"TemplateDir": "./testdata/plan/success",
+					"BaseDir": "./_test",
+					"Filename": "hello_{{ .Name }}.go",
+					"TemplateNames": ["p1/t1"],
+					"Data": null
 				}
 			]
 		}`)}, false},
@@ -89,8 +121,8 @@ func TestPackagePlanner_Perform(t *testing.T) {
 					"BaseDir": "./_test",
 					"RelativePackage": "p1/p2",
 					"TemplateNames": [
-						"testdata/plan/success/p1/t1",
-						"testdata/plan/success/p1/t3"
+						"p1/t1",
+						"p1/t3"
 					],
 					"Data": [
 						{
@@ -107,9 +139,9 @@ func TestPackagePlanner_Perform(t *testing.T) {
 					"RelativePackage": "p4/p5",
 					"BasePackage": "github.com/user/repo/path1/path2",
 					"TemplateNames": [
-						"testdata/plan/success/p1/t1",
-						"testdata/plan/success/p1/t3",
-						"testdata/plan/success/p1/t5"
+						"p1/t1",
+						"p1/t3",
+						"p1/t5"
 					],
 					"Imports": {
 						"./p3": ""
@@ -127,7 +159,7 @@ func TestPackagePlanner_Perform(t *testing.T) {
 					"BaseDir": "./_test",
 					"RelativePackage": "p1/p2",
 					"Filename": "hello_{{- .Name -}}.go",
-					"TemplateNames": ["testdata/plan/success/p1/t1"],
+					"TemplateNames": ["p1/t1"],
 					"Data": [
 						{
 							"Name": "world1",

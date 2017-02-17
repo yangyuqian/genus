@@ -1,0 +1,59 @@
+{
+  "Suffix": ".tpl",
+  "BaseDir": "./_test/simple-cli-webapp",
+  "TemplateDir": "./examples/simple-cli-webapp/templates",
+  "Data": [
+    {
+      "Name": "main",
+      "AppName": "myapp",
+      "AppDescr": "My Golang Application",
+      "AppVersion": "0.0.1",
+      "WithConfig": true,
+      "ConfigFormat": "yaml",
+      "WithHTTP": true
+    }
+  ],
+  "PlanItems": [
+    {
+      "Package": "main",
+      "RelativePackage": "cmd/server",
+      "PlanType": "SINGLETON",
+      "TemplateNames": [
+        "main"
+      ],
+      "Imports": {
+        "./app/types": "",
+        "./app/server": "",
+       "os": "",
+        "gopkg.in/urfave/cli.v1": "cli",
+        "net/http": ""
+      }
+    },
+    {
+      "RelativePackage": "app/server",
+      "PlanType": "SINGLETON",
+      "TemplateNames": [
+        "default_handler",
+        "server"
+      ],
+      "Imports": {
+        "crypto/tls":"",
+        "crypto/x509":"",
+        "fmt": "",
+        "io/ioutil": "",
+        "log": "",
+        "net": "",
+        "net/http": "",
+        "strconv": "",
+        "strings": "",
+        "sync": "",
+        "time": "",
+        "github.com/tylerb/graceful":"",
+        "github.com/pkg/errors": "",
+        "net/http/httptest": "",
+        "testing": "",
+        "os": ""
+      }
+    }
+  ]
+}

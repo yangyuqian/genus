@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/yangyuqian/genus/types"
 )
 
 // Plan for generations of singleton files
@@ -23,6 +25,7 @@ type SingletonPlan struct {
 	SkipExists      bool
 	SkipFormat      bool
 	SkipFixImports  bool
+	Merge           bool
 
 	// Calculated
 	Repo          *Repo
@@ -89,6 +92,7 @@ func (p *SingletonPlan) init() (err error) {
 	}
 	p.TemplateGroup.BaseDir = p.BaseDir
 	p.TemplateGroup.BasePackage = p.BasePackage
+	p.TemplateGroup.Merge = p.Merge
 
 	if idx := strings.LastIndex(p.RelativePackage, "/"); idx >= 0 {
 		p.TemplateGroup.Package = p.RelativePackage[(idx + 1):]
@@ -114,6 +118,6 @@ func (p *SingletonPlan) init() (err error) {
 }
 
 // PlanType of SingletonPlan
-func (p *SingletonPlan) Type() PlanType {
-	return SINGLETON
+func (p *SingletonPlan) Type() types.PlanType {
+	return types.SINGLETON
 }

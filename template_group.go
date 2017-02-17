@@ -2,7 +2,6 @@ package genus
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,9 +30,14 @@ type TemplateGroup struct {
 	SkipFixImports  bool // skip fixing imports
 	SkipExists      bool // skip generation if exist
 	SkipFormat      bool // skip go format
+	Merge           bool
 }
 
 func (tg *TemplateGroup) Render(data interface{}) (err error) {
+	if tg.Merge {
+		return tg.RenderPartial(data)
+	}
+
 	err = tg.ensureGOOS()
 	if err != nil {
 		return err
@@ -50,8 +54,6 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 	}
 
 	absPkg := filepath.Join(tg.BasePackage, tg.RelativePackage)
-	log.Printf("Rendering template group with BasePackage: %v, Package: %v, RelativePackage: %v",
-		tg.BasePackage, tg.Package, tg.RelativePackage)
 	tdata := &templateData{
 		Package:         tg.Package,
 		AbosultePackage: absPkg,
@@ -66,6 +68,51 @@ func (tg *TemplateGroup) Render(data interface{}) (err error) {
 		}
 	}
 
+	return
+}
+
+func (tg *TemplateGroup) RenderPartial(data interface{}) (err error) {
+	err = tg.ensureGOOS()
+	if err != nil {
+		return err
+	}
+
+	err = tg.ensureGopath()
+	if err != nil {
+		return err
+	}
+
+	err = tg.configureTemplates()
+	if err != nil {
+		return err
+	}
+
+	absPkg := filepath.Join(tg.BasePackage, tg.RelativePackage)
+	tdata := &templateData{
+		Package:         tg.Package,
+		AbosultePackage: absPkg,
+		Data:            data,
+		Imports:         tg.Imports,
+	}
+
+	mergedTemplate := Template{
+		Filename:       tg.Filename,
+		TargetDir:      filepath.Join(tg.BaseDir, tg.RelativePackage),
+		SkipExists:     tg.SkipExists,
+		SkipFormat:     tg.SkipFormat,
+		SkipFixImports: tg.SkipFixImports,
+	}
+
+	for _, t := range tg.Templates {
+		partial, err := t.RenderPartial(tdata)
+		if err != nil {
+			return err
+		}
+		mergedTemplate.rawTemplate = append(mergedTemplate.rawTemplate, '\n')
+		mergedTemplate.rawTemplate = append(mergedTemplate.rawTemplate, partial...)
+	}
+
+	_, err = mergedTemplate.Render(tdata)
 	return
 }
 
@@ -85,16 +132,18 @@ func (tg *TemplateGroup) configureTemplates() (err error) {
 			t.Filename = tg.Filename
 		}
 
-		if idx := strings.LastIndex(t.Name, "/"); tg.Filename == "" && idx > 0 {
-			t.Filename = t.Name[(idx+1):] + ".go"
+		if tg.Filename == "" {
+			if idx := strings.LastIndex(t.Name, "/"); idx > 0 {
+				t.Filename = t.Name[(idx+1):] + ".go"
+			} else if len(t.Name) > 0 {
+				t.Filename = t.Name + ".go"
+			}
 		}
 
 		t.SkipExists = tg.SkipExists
 		t.SkipFormat = tg.SkipFormat
 		t.SkipFixImports = tg.SkipFixImports
 	}
-	log.Printf("Configuring template group with BaseDir: %v, Package: %v",
-		tg.BaseDir, tg.Package)
 
 	imps := make(Imports)
 	for imp, alias := range tg.Imports {
@@ -131,7 +180,6 @@ func (tg *TemplateGroup) ensureGopath() (err error) {
 
 	for _, gopath := range gopaths {
 		if strings.HasPrefix(pwd, gopath) {
-			log.Printf("Ensure %s under $GOPATH %s", pwd, gopath)
 			if tg.BaseDir == "" {
 				tg.BaseDir = pwd
 			}
@@ -139,7 +187,6 @@ func (tg *TemplateGroup) ensureGopath() (err error) {
 			if tg.BasePackage == "" {
 				tg.BasePackage = pwd[len(gopath)+5:]
 			}
-			log.Printf("BasePackage: %s", tg.BasePackage)
 
 			return nil
 		}

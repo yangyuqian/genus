@@ -45,33 +45,54 @@ func (tmpl *Template) SetRawTemplate(raw []byte) (data []byte) {
 	return raw
 }
 
-// Render template by given data
-func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
-	log.Println("Performing Template:load")
+func (tmpl *Template) RenderPartial(data interface{}) (result []byte, err error) {
 	_, err = tmpl.load()
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("Performing Template:render")
+	return tmpl.renderPartial(data)
+}
+
+// Render template by context
+func (tmpl *Template) renderPartial(context interface{}) (data []byte, err error) {
+	rawTemplate := fmt.Sprintf("{{ with .Data }}%s{{ end -}}", string(tmpl.rawTemplate))
+	parsed, parsedErr := template.New(tmpl.Name).Funcs(GoHelperFuncs).Parse(string(rawTemplate))
+	if parsedErr != nil {
+		return nil, parsedErr
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	if execErr := parsed.Execute(buf, context); execErr != nil {
+		return nil, execErr
+	}
+	data = buf.Bytes()
+	tmpl.rawResult = data
+	return
+}
+
+// Render template by given data
+func (tmpl *Template) Render(data interface{}) (result []byte, err error) {
+	_, err = tmpl.load()
+	if err != nil {
+		return nil, err
+	}
+
 	result, err = tmpl.render(data)
 	if err != nil {
 		return
 	}
 
-	log.Println("Performing Template:format")
 	result, err = tmpl.format()
 	if err != nil {
 		return
 	}
 
-	log.Println("Performing Template:write")
 	err = tmpl.write()
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("Performing Template:fixImports")
 	result, err = tmpl.fixImports()
 	if err != nil {
 		return nil, err
@@ -98,12 +119,10 @@ func (tmpl *Template) format() (data []byte, err error) {
 
 func (tmpl *Template) fixImports() (data []byte, err error) {
 	if tmpl.SkipFixImports {
-		log.Println("Skip fixing imports")
 		return tmpl.rawResult, nil
 	}
 
-	log.Printf("Fixing imports for %s", filepath.Join(tmpl.TargetDir, tmpl.Filename))
-	data, err = goimports.Process(filepath.Join(tmpl.TargetDir, tmpl.Filename), tmpl.rawResult, &goimports.Options{})
+	data, err = goimports.Process(filepath.Join(tmpl.TargetDir, tmpl.Filename), tmpl.rawResult, &goimports.Options{Comments: true})
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +137,7 @@ func (tmpl *Template) fixImports() (data []byte, err error) {
 // Load data from file if rawTemplate is not set
 func (tmpl *Template) load() (data []byte, err error) {
 	if len(tmpl.rawTemplate) <= 0 {
+		log.Printf("raw template %s not set, loading from file %s", tmpl.Name, tmpl.Source)
 		return tmpl.loadFile()
 	}
 
@@ -141,8 +161,12 @@ func (tmpl *Template) loadFile() (data []byte, err error) {
 
 // Render template by context
 func (tmpl *Template) render(context interface{}) (data []byte, err error) {
-	withHeader := fmt.Sprintf("%s{{ with .Data }}%s{{ end -}}", string(defaultHeader), string(tmpl.rawTemplate))
-	parsed, parsedErr := template.New(tmpl.Name).Parse(withHeader)
+	if len(tmpl.header) <= 0 {
+		tmpl.header = defaultHeader
+	}
+
+	withHeader := fmt.Sprintf("%s{{ with .Data }}%s{{ end -}}", string(tmpl.header), string(tmpl.rawTemplate))
+	parsed, parsedErr := template.New(tmpl.Name).Funcs(GoHelperFuncs).Parse(withHeader)
 	if parsedErr != nil {
 		return nil, parsedErr
 	}
@@ -154,7 +178,7 @@ func (tmpl *Template) render(context interface{}) (data []byte, err error) {
 	data = buf.Bytes()
 
 	fbuf := bytes.NewBuffer([]byte{})
-	err = template.Must(template.New("filename").Parse(fmt.Sprintf("{{- with .Data -}} %s {{- end -}}", tmpl.Filename))).Execute(fbuf, context)
+	err = template.Must(template.New("filename").Funcs(GoHelperFuncs).Parse(fmt.Sprintf("{{- with .Data -}} %s {{- end -}}", tmpl.Filename))).Execute(fbuf, context)
 	if err != nil {
 		return nil, err
 	}
@@ -174,16 +198,18 @@ func (tmpl *Template) write() (err error) {
 	}
 
 	path := filepath.Join(tmpl.TargetDir, tmpl.Filename)
+	log.Printf("Joining filepath = <%s> + <%s>", tmpl.TargetDir, tmpl.Filename)
 
 	if _, err := os.Stat(path); err == nil && tmpl.SkipExists {
 		return nil
 	}
 
-	log.Printf("Creating directory %s", tmpl.TargetDir)
+	log.Printf("Creating directory <%s>", tmpl.TargetDir)
 	err = os.MkdirAll(tmpl.TargetDir, 0777)
 	if err != nil {
 		return err
 	}
 
+	log.Printf("Writing to file <%s>", path)
 	return ioutil.WriteFile(path, tmpl.rawResult, 0666)
 }

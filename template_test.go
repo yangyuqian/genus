@@ -434,3 +434,141 @@ func TestTemplate_fixImports(t *testing.T) {
 		}
 	}
 }
+
+func TestTemplate_renderPartial(t *testing.T) {
+	type fields struct {
+		Name           string
+		Source         string
+		TargetDir      string
+		Filename       string
+		SkipExists     bool
+		SkipFormat     bool
+		SkipFixImports bool
+		header         []byte
+		rawTemplate    []byte
+		rawResult      []byte
+	}
+	type args struct {
+		context interface{}
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantData []byte
+		wantErr  bool
+	}{
+		{"OK", fields{
+			rawTemplate: []byte("type {{ .Name }} struct{}"),
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("type A struct{}"), false},
+		{"KO - bad syntax in template", fields{
+			rawTemplate: []byte("type {{ .Name"),
+		}, args{map[string]string{"Name": "A"}}, nil, true},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:           tt.fields.Name,
+			Source:         tt.fields.Source,
+			TargetDir:      tt.fields.TargetDir,
+			Filename:       tt.fields.Filename,
+			SkipExists:     tt.fields.SkipExists,
+			SkipFormat:     tt.fields.SkipFormat,
+			SkipFixImports: tt.fields.SkipFixImports,
+			header:         tt.fields.header,
+			rawTemplate:    tt.fields.rawTemplate,
+			rawResult:      tt.fields.rawResult,
+		}
+		gotData, err := tmpl.renderPartial(tt.args.context)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.renderPartial() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotData, tt.wantData) {
+			t.Errorf("%q. Template.renderPartial() = %v, want %v", tt.name, string(gotData), tt.wantData)
+		}
+	}
+}
+
+func TestTemplate_RenderPartial(t *testing.T) {
+	type fields struct {
+		Name           string
+		Source         string
+		TargetDir      string
+		Filename       string
+		SkipExists     bool
+		SkipFormat     bool
+		SkipFixImports bool
+		header         []byte
+		rawTemplate    []byte
+		rawResult      []byte
+	}
+	type args struct {
+		data interface{}
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantResult []byte
+		wantErr    bool
+	}{
+		{"OK - render template from file", fields{
+			Name:      "t3",
+			Source:    "./testdata/template/t3.tpl",
+			TargetDir: "_test",
+			Filename:  "t3.go",
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("type A struct{}\n"), false},
+		{"OK - render template from raw bytes", fields{
+			rawTemplate: []byte("type {{ .Name }} struct{}"),
+		}, args{map[string]interface{}{"Package": "p1", "Data": map[string]interface{}{"Name": "A"}}}, []byte("type A struct{}"), false},
+		{"OK - set raw template with imports", fields{
+			Name:      "t5",
+			Source:    "./testdata/template/t5.tpl",
+			TargetDir: "_test",
+			Filename:  "t5.go",
+		}, args{
+			map[string]interface{}{
+				"Package": "p1",
+				"Data": map[string]interface{}{
+					"Name":    "A",
+					"Imports": map[string]string{"": "p51"}}},
+		},
+			[]byte("type A struct{}\n"), false},
+		{"KO - Source not set", fields{
+			Name:      "t3",
+			TargetDir: "_test",
+			Filename:  "t3.go",
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
+		{"KO - bad syntax in rawTemplate", fields{
+			rawTemplate: []byte("package {{ .Package"),
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
+		{"KO - bad syntax in template file", fields{
+			Name:      "t4",
+			Source:    "./testdata/template/t4.tpl",
+			TargetDir: "_test",
+			Filename:  "t4.go",
+		}, args{map[string]string{"Package": "p1"}}, nil, true},
+	}
+	for _, tt := range tests {
+		tmpl := &Template{
+			Name:           tt.fields.Name,
+			Source:         tt.fields.Source,
+			TargetDir:      tt.fields.TargetDir,
+			Filename:       tt.fields.Filename,
+			SkipExists:     tt.fields.SkipExists,
+			SkipFormat:     tt.fields.SkipFormat,
+			SkipFixImports: tt.fields.SkipFixImports,
+			header:         tt.fields.header,
+			rawTemplate:    tt.fields.rawTemplate,
+			rawResult:      tt.fields.rawResult,
+		}
+		gotResult, err := tmpl.RenderPartial(tt.args.data)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("%q. Template.RenderPartial() error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			continue
+		}
+		if !reflect.DeepEqual(gotResult, tt.wantResult) {
+			t.Errorf("%q. Template.RenderPartial() = %v, want %v", tt.name, gotResult, tt.wantResult)
+		}
+	}
+}

@@ -22,9 +22,9 @@ func TestRepeatablePlan_Render(t *testing.T) {
 				BasePackage:     "github.com/yangyuqian/myapp",
 				RelativePackage: "x/y",
 				TemplateNames: []string{
-					"testdata/plan/success/p1/t1",
-					"testdata/plan/success/p1/p2/t2",
-					"testdata/plan/success/p1/t3",
+					"p1/t1",
+					"p1/p2/t2",
+					"p1/t3",
 				},
 			},
 		}, false},

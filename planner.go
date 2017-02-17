@@ -2,38 +2,13 @@ package genus
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/pkg/errors"
+	"github.com/yangyuqian/genus/generator/orm"
+	"github.com/yangyuqian/genus/types"
 )
-
-type PlanItem struct {
-	Package         string
-	PlanType        string
-	Suffix          string
-	TemplateDir     string
-	BaseDir         string
-	BasePackage     string
-	RelativePackage string
-	Filename        string
-	TemplateNames   []string
-	SkipExists      bool
-	SkipFormat      bool
-	SkipFixImports  bool
-	Imports         Imports
-	Data            []interface{}
-}
-
-type Spec struct {
-	Suffix         string
-	TemplateDir    string
-	BaseDir        string
-	BasePackage    string
-	SkipExists     bool
-	SkipFormat     bool
-	SkipFixImports bool
-	PlanItems      []*PlanItem
-}
 
 type Planner interface{}
 
@@ -64,14 +39,16 @@ func (pl *PackagePlanner) Perform() (err error) {
 }
 
 func (pl *PackagePlanner) Plan() (err error) {
-	pl.Spec = &Spec{}
-	if err = json.Unmarshal(pl.RawSpec, pl.Spec); err != nil {
-		return err
+	if pl.Spec == nil {
+		pl.Spec = &Spec{}
+		if err = json.Unmarshal(pl.RawSpec, pl.Spec); err != nil {
+			return err
+		}
 	}
 
 	for _, planItem := range pl.Spec.PlanItems {
 		switch planItem.PlanType {
-		case SINGLETON.String():
+		case types.SINGLETON.String():
 			plan := &SingletonPlan{
 				Suffix:          StringWithDefault(planItem.Suffix, pl.Spec.Suffix),
 				TemplateDir:     StringWithDefault(planItem.TemplateDir, pl.Spec.TemplateDir),
@@ -80,6 +57,7 @@ func (pl *PackagePlanner) Plan() (err error) {
 				SkipExists:      BoolWithDefault(planItem.SkipExists, pl.Spec.SkipExists),
 				SkipFormat:      BoolWithDefault(planItem.SkipFormat, pl.Spec.SkipFormat),
 				SkipFixImports:  BoolWithDefault(planItem.SkipFixImports, pl.Spec.SkipFixImports),
+				Merge:           BoolWithDefault(planItem.Merge, pl.Spec.Merge),
 				RelativePackage: planItem.RelativePackage,
 				TemplateNames:   planItem.TemplateNames,
 				Filename:        planItem.Filename,
@@ -87,13 +65,29 @@ func (pl *PackagePlanner) Plan() (err error) {
 				Imports:         planItem.Imports,
 			}
 
-			if len(planItem.Data) > 0 {
+			// Global data
+			if plan.Data == nil && len(planItem.Data) <= 0 && pl.Spec.Data != nil {
+				planItem.Data = pl.Spec.Data
+			}
+
+			// plan item data
+			if len(planItem.Data) > 0 && plan.Data == nil {
 				plan.Data = planItem.Data[0]
+			} else if ext := pl.Spec.Extension; ext != nil {
+				// extension data
+				// For empty data, try to build data from extension metadata
+				data, err := BuildSingletonData(ext.Framework, ext.Data)
+				if err != nil {
+					return err
+				}
+				if len(data) > 0 {
+					plan.Data = data[0]
+				}
 			}
 
 			pl.Plans = append(pl.Plans, plan)
-		case REPEATABLE.String():
-			pl.Plans = append(pl.Plans, &RepeatablePlan{
+		case types.REPEATABLE.String():
+			plan := &RepeatablePlan{
 				SingletonPlan: SingletonPlan{
 					Suffix:          StringWithDefault(planItem.Suffix, pl.Spec.Suffix),
 					TemplateDir:     StringWithDefault(planItem.TemplateDir, pl.Spec.TemplateDir),
@@ -102,18 +96,77 @@ func (pl *PackagePlanner) Plan() (err error) {
 					SkipExists:      BoolWithDefault(planItem.SkipExists, pl.Spec.SkipExists),
 					SkipFormat:      BoolWithDefault(planItem.SkipFormat, pl.Spec.SkipFormat),
 					SkipFixImports:  BoolWithDefault(planItem.SkipFixImports, pl.Spec.SkipFixImports),
+					Merge:           BoolWithDefault(planItem.Merge, pl.Spec.Merge),
 					RelativePackage: planItem.RelativePackage,
 					Filename:        planItem.Filename,
 					Package:         planItem.Package,
 					TemplateNames:   planItem.TemplateNames,
 					Imports:         planItem.Imports,
 				},
-				Data: planItem.Data,
-			})
+			}
+
+			// Global data
+			if plan.Data == nil && len(planItem.Data) <= 0 && pl.Spec.Data != nil {
+				planItem.Data = pl.Spec.Data
+			}
+
+			// plan item data
+			if len(planItem.Data) > 0 && plan.Data == nil {
+				plan.Data = planItem.Data
+			}
+
+			// extension data
+			if ext := pl.Spec.Extension; ext != nil && len(planItem.Data) <= 0 {
+				data, err := BuildRepeatableData(ext.Framework, ext.Data)
+				if err != nil {
+					return err
+				}
+
+				plan.Data = data
+			}
+			pl.Plans = append(pl.Plans, plan)
 		default:
 			return errors.New(fmt.Sprintf("Invalid plan type %s, PlanType must be either SINGLETON or REPEATABLE"))
 		}
 	}
 
+	return
+}
+
+func BuildSingletonData(framework string, data json.RawMessage) (o []interface{}, err error) {
+	switch framework {
+	case "sqlboiler":
+		opts := orm.DataOpts{Framework: framework}
+		if err = json.Unmarshal(data, &opts); err != nil {
+			return nil, err
+		}
+		opts.Driver, err = orm.DeadDriverByName(opts.DriverName)
+		if err != nil {
+			return nil, err
+		}
+
+		return orm.BuildSingletonData(opts)
+	default:
+		return nil, errors.Errorf("Framework <%s> is not supported", framework)
+	}
+	return
+}
+
+func BuildRepeatableData(framework string, data json.RawMessage) (o []interface{}, err error) {
+	switch framework {
+	case "sqlboiler":
+		opts := orm.DataOpts{}
+		if err = json.Unmarshal(data, &opts); err != nil {
+			return nil, err
+		}
+
+		opts.Driver, err = orm.DeadDriverByName(opts.DriverName)
+		if err != nil {
+			return nil, err
+		}
+		return orm.BuildRepeatableData(opts)
+	default:
+		return nil, errors.Errorf("Framework <%s> is not supported", framework)
+	}
 	return
 }
