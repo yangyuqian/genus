@@ -56,5 +56,53 @@ PlanItems represents independent code generation plan for files in same package.
 
 [Simple Command Line for Web Application](/examples/single-cli-webapp)
 
+```
+$ cd $GOPATH/github.com/yangyuqian/genus
+$ genus generate --spec examples/simple-cli-webapp/plan.json
+```
 
+Now, you can play with the generated application, check out the usage
 
+```
+$ go run _test/simple-cli-webapp/cmd/server/main.go
+
+NAME:
+   myapp - My Golang Application
+
+USAGE:
+   main [global options] command [command options] [arguments...]
+
+VERSION:
+   0.0.1
+
+COMMANDS:
+     server, s  Application Server
+     help, h    Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --version, -v  print the version
+```
+
+Start the server on `localhost:8080`
+
+```
+$ go run _test/simple-cli-webapp/cmd/server/main.go s
+$ curl localhost:8080
+
+This is a generated command-line interface for general web application.
+
+Go to [Genus](https://github.com/yangyuqian/genus) for more details.
+```
+
+[Model Generator for GORM](/examples/orm/gorm)
+
+This examples shows one of the most useful scenario for repeatable plan items.
+
+You can create GORM models easily for parsed database schema:
+
+```
+$ genus generate --spec examples/orm/gorm/plan.json
+```
+
+Gorm models will be located at `./_test/orm/gorm`.

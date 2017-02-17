@@ -1,12 +1,7 @@
 {
    "Suffix": ".tpl",
-   "TemplateDir": "./generator/orm/gorm",
+   "TemplateDir": "./examples/orm/gorm/templates",
    "BaseDir": "./_test",
-   "BasePackage": "",
-   "SkipExists": false,
-   "SkipFormat": false,
-   "SkipFixImports": false,
-   "Merge": false,
    "PlanItems": [
      {
        "Package": "",
@@ -15,10 +10,10 @@
        "TemplateDir": "",
        "BaseDir": "./_test",
        "BasePackage": "",
-       "RelativePackage": "gorm/orm",
+       "RelativePackage": "orm/gorm",
        "Filename": "{{- with .Table }}{{.Name}}{{ end -}}.go",
        "TemplateNames": [
-         "templates/struct"
+         "struct"
        ],
        "SkipExists": false,
        "SkipFormat": false,
@@ -50,11 +45,9 @@
          "sync": "",
          "testing": "",
          "time": ""
-       },
-       "Data": null
+       }
      }
    ],
-   "Extension": null,
    "Data": [
      {
        "PkgName": "",
