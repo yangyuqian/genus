@@ -17,6 +17,9 @@ List of Contents:
 
 A general code generation tools in Go.
 
+New to code generation?
+Refer [text/template](https://golang.org/pkg/text/template/) for basic knowledge.
+
 # Why Another Generator?
 
 Code generation has been becoming a popular way of metaprogramming in Go.
